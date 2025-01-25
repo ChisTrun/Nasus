@@ -32,7 +32,7 @@ static_resources:
                       address: questionai
                       port_value: 5000
       name: questionai_cluster
-      type: logical_dns 
+      type: logical_dns
     - connect_timeout: 1s
       lb_policy: round_robin
       load_assignment:
@@ -43,9 +43,23 @@ static_resources:
                   address:
                     socket_address:
                       address: thresh
-                      port_value:  8080
+                      port_value: 8080
       name: thresh_cluster
-      type: logical_dns 
+      type: logical_dns
+    - connect_timeout: 1s
+      http2_protocol_options: {}
+      lb_policy: round_robin
+      load_assignment:
+        cluster_name: bulbasaur_cluster
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: bulbasaur
+                      port_value: 8080
+      name: bulbasaur_cluster
+      type: logical_dns
   listeners:
     - address:
         socket_address:
@@ -88,6 +102,14 @@ static_resources:
                             cluster: thresh_cluster
                             prefix_rewrite: /
                             timeout: 60s
+                        - match:
+                            prefix: /bulbasaur.
+                          route:
+                            cluster: bulbasaur_cluster
+                          typed_per_filter_config:
+                            envoy.filters.http.ext_authz:
+                              "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                              disabled: true
                 http_filters:
                   - name: envoy.filters.http.grpc_web
                     typed_config:
@@ -95,8 +117,16 @@ static_resources:
                   - name: envoy.filters.http.cors
                     typed_config:
                       "@type": type.googleapis.com/envoy.extensions.filters.http.cors.v3.Cors
+                  - name: envoy.filters.http.ext_authz
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthz
+                      grpc_service:
+                        envoy_grpc:
+                          cluster_name: bulbasaur_cluster
+                        timeout: 5s
+                      transport_api_version: V3
                   - name: envoy.filters.http.router
                     typed_config:
-                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router 
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
                 stat_prefix: ingress_http
       name: listener_0

@@ -1,13 +1,4 @@
 services:
-  caitlyn:
-    image: skillsharp123/skillsharp-fe:v1.0.11
-    ports:
-      - "3000:5173"
-    env_file:
-      - ./configs/Caitlyn/.env
-    networks:
-      - my_network
-
   envoy:
     image: envoyproxy/envoy:v1.24-latest
     ports:
@@ -18,34 +9,34 @@ services:
     networks:
       - my_network
     depends_on:
-      akali:
-        condition: service_started
       thresh:
         condition: service_started
-      questionai:
+      bulbasaur:
         condition: service_started
+      # akali:
+      #   condition: service_started
+      # questionai:
+      #   condition: service_started
 
-  akali:
-    build:
-      context: ./raw_services/Akali
-      dockerfile: dockerfile
+  bulbasaur:
+    image: skillsharp123/bulbasaur:v1.0.22
     env_file:
-      - ./configs/Akali/.env
+      - ./configs/Bulbasaur/.env
     networks:
       - my_network
     depends_on:
       database:
-        condition: service_started
+        condition: service_healthy
 
   thresh:
-    image: skillsharp123/skillsharp_thresh:v1.0.6
+    image: skillsharp123/skillsharp_thresh:v1.0.8
     env_file:
       - ./configs/Thresh/.env
     networks:
       - my_network
     depends_on:
       database:
-        condition: service_started
+        condition: service_healthy
 
   database:
     image: mysql:latest
@@ -55,34 +46,74 @@ services:
       - my_network
     ports:
       - "3306:3306"
-      
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.4.3
-    container_name: elasticsearch
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
+      retries: 3
+      start_period: 30s
+      timeout: 10s
+
+  redis:
+    image: redis:latest
+    container_name: redis_container
     ports:
-      - "${ELASTIC_PORT:-9200}:9200"
-      - "9300:9300"
+      - "6379:6379"
     volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
+      - redis_data:/data
+    command: ["redis-server", "--appendonly", "yes"]
     networks:
       - my_network
+    
+  # caitlyn:
+  #   image: skillsharp123/skillsharp-fe:v1.0.11
+  #   ports:
+  #     - "3000:5173"
+  #   env_file:
+  #     - ./configs/Caitlyn/.env
+  #   networks:
+  #     - my_network
 
-  questionai:
-    build:
-      context: ./raw_services/QuestionGenerator
-      dockerfile: Dockerfile
-    env_file:
-      - ./configs/QuestionGenerator/.env
-    depends_on:
-      - elasticsearch
-    networks:
-      - my_network
+  # akali:
+  #   build:
+  #     context: ./raw_services/Akali
+  #     dockerfile: dockerfile
+  #   env_file:
+  #     - ./configs/Akali/.env
+  #   networks:
+  #     - my_network
+  #   depends_on:
+  #     database:
+  #       condition: service_started
 
+  # elasticsearch:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:8.4.3
+  #   container_name: elasticsearch
+  #   environment:
+  #     - discovery.type=single-node
+  #     - xpack.security.enabled=false
+  #   ports:
+  #     - "${ELASTIC_PORT:-9200}:9200"
+  #     - "9300:9300"
+  #   volumes:
+  #     - elasticsearch_data:/usr/share/elasticsearch/data
+  #   networks:
+  #     - my_network
+
+  # questionai:
+  #   build:
+  #     context: ./raw_services/QuestionGenerator
+  #     dockerfile: Dockerfile
+  #   env_file:
+  #     - ./configs/QuestionGenerator/.env
+  #   depends_on:
+  #     - elasticsearch
+  #   networks:
+  #     - my_network
+
+    
 networks:
   my_network:
 
 volumes:
   elasticsearch_data:
+  redis_data:
