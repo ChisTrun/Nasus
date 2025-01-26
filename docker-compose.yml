@@ -19,7 +19,7 @@ services:
       #   condition: service_started
 
   bulbasaur:
-    image: skillsharp123/bulbasaur:v1.0.22
+    image: skillsharp123/bulbasaur:v1.0.23
     env_file:
       - ./configs/Bulbasaur/.env
     networks:

@@ -103,13 +103,33 @@ static_resources:
                             prefix_rewrite: /
                             timeout: 60s
                         - match:
-                            prefix: /bulbasaur.
+                            prefix: /bulbasaur.Bulbasaur/SignIn
                           route:
                             cluster: bulbasaur_cluster
                           typed_per_filter_config:
                             envoy.filters.http.ext_authz:
                               "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
                               disabled: true
+                        - match:
+                            prefix: /bulbasaur.Bulbasaur/SignUp
+                          route:
+                            cluster: bulbasaur_cluster
+                          typed_per_filter_config:
+                            envoy.filters.http.ext_authz:
+                              "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                              disabled: true
+                        - match:
+                            prefix: /bulbasaur.Bulbasaur/RefreshToken
+                          route:
+                            cluster: bulbasaur_cluster
+                          typed_per_filter_config:
+                            envoy.filters.http.ext_authz:
+                              "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                              disabled: true
+                        - match:
+                            prefix: /bulbasaur.
+                          route:
+                            cluster: bulbasaur_cluster
                 http_filters:
                   - name: envoy.filters.http.grpc_web
                     typed_config:
