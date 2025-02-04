@@ -13,45 +13,22 @@ services:
         condition: service_started
       bulbasaur:
         condition: service_started
-      # akali:
-      #   condition: service_started
       # questionai:
       #   condition: service_started
 
   bulbasaur:
-    image: skillsharp123/bulbasaur:v1.0.23
+    image: skillsharp123/bulbasaur:v1.0.24
     env_file:
       - ./configs/Bulbasaur/.env
     networks:
       - my_network
-    depends_on:
-      database:
-        condition: service_healthy
 
   thresh:
-    image: skillsharp123/skillsharp_thresh:v1.0.8
+    image: skillsharp123/skillsharp_thresh:v1.0.9
     env_file:
       - ./configs/Thresh/.env
     networks:
       - my_network
-    depends_on:
-      database:
-        condition: service_healthy
-
-  database:
-    image: mysql:latest
-    environment:
-      MYSQL_ROOT_PASSWORD: skillsharp@fit!2021
-    networks:
-      - my_network
-    ports:
-      - "3306:3306"
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 30s
-      retries: 3
-      start_period: 30s
-      timeout: 10s
 
   redis:
     image: redis:latest
@@ -64,27 +41,6 @@ services:
     networks:
       - my_network
     
-  # caitlyn:
-  #   image: skillsharp123/skillsharp-fe:v1.0.11
-  #   ports:
-  #     - "3000:5173"
-  #   env_file:
-  #     - ./configs/Caitlyn/.env
-  #   networks:
-  #     - my_network
-
-  # akali:
-  #   build:
-  #     context: ./raw_services/Akali
-  #     dockerfile: dockerfile
-  #   env_file:
-  #     - ./configs/Akali/.env
-  #   networks:
-  #     - my_network
-  #   depends_on:
-  #     database:
-  #       condition: service_started
-
   # elasticsearch:
   #   image: docker.elastic.co/elasticsearch/elasticsearch:8.4.3
   #   container_name: elasticsearch

@@ -10,19 +10,6 @@ static_resources:
     - connect_timeout: 1s
       lb_policy: round_robin
       load_assignment:
-        cluster_name: akali_cluster
-        endpoints:
-          - lb_endpoints:
-              - endpoint:
-                  address:
-                    socket_address:
-                      address: akali
-                      port_value: 8080
-      name: akali_cluster
-      type: logical_dns
-    - connect_timeout: 1s
-      lb_policy: round_robin
-      load_assignment:
         cluster_name: questionai_cluster
         endpoints:
           - lb_endpoints:
@@ -85,12 +72,6 @@ static_resources:
                       name: cms_service
                       routes:
                         - match:
-                            prefix: /akali/
-                          route:
-                            cluster: akali_cluster
-                            prefix_rewrite: /
-                            timeout: 60s
-                        - match:
                             prefix: /questionai/
                           route:
                             cluster: questionai_cluster
@@ -102,6 +83,10 @@ static_resources:
                             cluster: thresh_cluster
                             prefix_rewrite: /
                             timeout: 60s
+                          typed_per_filter_config:
+                            envoy.filters.http.ext_authz:
+                              "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                              disabled: true
                         - match:
                             prefix: /bulbasaur.Bulbasaur/SignIn
                           route:
