@@ -43,6 +43,7 @@ def elastic_search_hybrid(query):
         "query": keyword_query,
         "size": 10,
         "_source": ["question", "category", "type", "job_position", "level", "description", "id"]
+        # Set min score 
     }
 
     

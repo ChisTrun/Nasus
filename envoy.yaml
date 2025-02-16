@@ -10,6 +10,19 @@ static_resources:
     - connect_timeout: 1s
       lb_policy: round_robin
       load_assignment:
+        cluster_name: akali_cluster
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: akali
+                      port_value: 8080
+      name: akali_cluster
+      type: logical_dns
+    - connect_timeout: 1s
+      lb_policy: round_robin
+      load_assignment:
         cluster_name: questionai_cluster
         endpoints:
           - lb_endpoints:
@@ -34,6 +47,19 @@ static_resources:
       name: thresh_cluster
       type: logical_dns
     - connect_timeout: 1s
+      lb_policy: round_robin
+      load_assignment:
+        cluster_name: darius_cluster
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: darius
+                      port_value: 8080
+      name: darius_cluster
+      type: logical_dns
+    - connect_timeout: 1s
       http2_protocol_options: {}
       lb_policy: round_robin
       load_assignment:
@@ -46,6 +72,20 @@ static_resources:
                       address: bulbasaur
                       port_value: 8080
       name: bulbasaur_cluster
+      type: logical_dns
+    - connect_timeout: 1s
+      http2_protocol_options: {}
+      lb_policy: round_robin
+      load_assignment:
+        cluster_name: ekko_cluster
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: ekko
+                      port_value: 8080
+      name: ekko_cluster
       type: logical_dns
   listeners:
     - address:
@@ -77,6 +117,10 @@ static_resources:
                             cluster: questionai_cluster
                             prefix_rewrite: /
                             timeout: 60s
+                          typed_per_filter_config:
+                            envoy.filters.http.ext_authz:
+                              "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                              disabled: true
                         - match:
                             prefix: /thresh/
                           route:
@@ -115,6 +159,38 @@ static_resources:
                             prefix: /bulbasaur.
                           route:
                             cluster: bulbasaur_cluster
+                        - match:
+                            prefix: /akali/
+                          route:
+                            cluster: akali_cluster
+                            prefix_rewrite: /
+                            timeout: 60s
+                          typed_per_filter_config:
+                            envoy.filters.http.ext_authz:
+                              "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                              disabled: true
+                        - match:
+                            prefix: /ekko.Chronobreak
+                          route:
+                            cluster: ekko_cluster
+                          typed_per_filter_config:
+                            envoy.filters.http.ext_authz:
+                              "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                              disabled: true
+                        - match:
+                            prefix: /ekko.Ekko
+                          route:
+                            cluster: ekko_cluster
+                        - match:
+                            prefix: /darius/
+                          route:
+                            cluster: darius_cluster
+                            prefix_rewrite: /
+                            timeout: 60s
+                          typed_per_filter_config:
+                            envoy.filters.http.ext_authz:
+                              "@type": type.googleapis.com/envoy.extensions.filters.http.ext_authz.v3.ExtAuthzPerRoute
+                              disabled: true
                 http_filters:
                   - name: envoy.filters.http.grpc_web
                     typed_config:

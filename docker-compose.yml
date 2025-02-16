@@ -13,20 +13,42 @@ services:
         condition: service_started
       bulbasaur:
         condition: service_started
-      # questionai:
-      #   condition: service_started
+      ekko:
+        condition: service_started
+      questionai:
+        condition: service_started
 
   bulbasaur:
-    image: skillsharp123/bulbasaur:v1.0.24
+    image: skillsharp123/bulbasaur:v1.0.27
     env_file:
       - ./configs/Bulbasaur/.env
     networks:
       - my_network
 
+  ekko:
+    image: skillsharp123/ekko:v1.0.1
+    env_file:
+      - ./configs/Ekko/.env
+    networks:
+      - my_network
+  darius:
+    image: skillsharp123/darius:v1.0.2
+    networks:
+      - my_network
+  
   thresh:
     image: skillsharp123/skillsharp_thresh:v1.0.9
     env_file:
       - ./configs/Thresh/.env
+    networks:
+      - my_network
+
+  akali:
+    build:
+      context: ./raw_services/Akali
+      dockerfile: dockerfile
+    env_file:
+      - ./configs/Akali/.env
     networks:
       - my_network
 
@@ -41,32 +63,31 @@ services:
     networks:
       - my_network
     
-  # elasticsearch:
-  #   image: docker.elastic.co/elasticsearch/elasticsearch:8.4.3
-  #   container_name: elasticsearch
-  #   environment:
-  #     - discovery.type=single-node
-  #     - xpack.security.enabled=false
-  #   ports:
-  #     - "${ELASTIC_PORT:-9200}:9200"
-  #     - "9300:9300"
-  #   volumes:
-  #     - elasticsearch_data:/usr/share/elasticsearch/data
-  #   networks:
-  #     - my_network
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.4.3
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - "${ELASTIC_PORT:-9200}:9200"
+      - "9300:9300"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - my_network
 
-  # questionai:
-  #   build:
-  #     context: ./raw_services/QuestionGenerator
-  #     dockerfile: Dockerfile
-  #   env_file:
-  #     - ./configs/QuestionGenerator/.env
-  #   depends_on:
-  #     - elasticsearch
-  #   networks:
-  #     - my_network
+  questionai:
+    build:
+      context: ./raw_services/QuestionGenerator
+      dockerfile: Dockerfile
+    env_file:
+      - ./configs/QuestionGenerator/.env
+    depends_on:
+      - elasticsearch
+    networks:
+      - my_network
 
-    
 networks:
   my_network:
 
